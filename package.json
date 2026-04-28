@@ -1,0 +1,31 @@
+{
+  "name": "distributed-rate-limiter",
+  "version": "1.0.0",
+  "description": "Production-ready distributed rate limiter using Token Bucket, Node.js, Express & Redis",
+  "type": "module",
+  "main": "app.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start":     "node app.js",
+    "dev":       "node --watch app.js",
+    "test:load": "node tests/loadTest.js",
+    "lint":      "eslint . --ext .js"
+  },
+  "keywords": [
+    "rate-limiter",
+    "token-bucket",
+    "redis",
+    "express",
+    "distributed"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "pino":    "^9.1.0",
+    "pino-pretty": "^11.0.0",
+    "redis":   "^4.6.14"
+  }
+}

@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  # ── Redis ─────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7.2-alpine
+    container_name: rl-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - rl-net
+
+  # ── App instance 1 ────────────────────────────────────────────────────────
+  app1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rl-app-1
+    restart: unless-stopped
+    environment:
+      PORT:            3000
+      NODE_ENV:        production
+      REDIS_URL:       redis://redis:6379
+      RL_REFILL_RATE:  10
+      RL_CAPACITY:     20
+      RL_TTL_SECONDS:  3600
+      LOG_LEVEL:       info
+    ports:
+      - "3001:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - rl-net
+
+  # ── App instance 2 (demonstrates distributed correctness) ────────────────
+  app2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rl-app-2
+    restart: unless-stopped
+    environment:
+      PORT:            3000
+      NODE_ENV:        production
+      REDIS_URL:       redis://redis:6379
+      RL_REFILL_RATE:  10
+      RL_CAPACITY:     20
+      RL_TTL_SECONDS:  3600
+      LOG_LEVEL:       info
+    ports:
+      - "3002:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - rl-net
+
+volumes:
+  redis_data:
+
+networks:
+  rl-net:
+    driver: bridge
